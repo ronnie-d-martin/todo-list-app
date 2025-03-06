@@ -1,0 +1,160 @@
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import Home from "./pages/Home";
+import TodosPage from "./pages/TodosPage";
+import AddTodoPage from "./pages/AddTodoPage";
+import Navbar from "./components/Navbar";
+import { TodoProvider } from "./context/TodoContext";
+
+function App() {
+  return (
+    <TodoProvider>
+      <Router>
+        <div className="bg-gray-100 min-h-screen">
+          <Navbar />
+          <div className="container mx-auto p-4">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/todos" element={<TodosPage />} />
+              <Route path="/add" element={<AddTodoPage />} />
+            </Routes>
+          </div>
+        </div>
+      </Router>
+    </TodoProvider>
+  );
+}
+
+export default App;
+
+// Context API for managing todos
+import { createContext, useState, useContext } from "react";
+
+const TodoContext = createContext(null);
+
+export const TodoProvider = ({ children }) => {
+  const [todos, setTodos] = useState([]);
+
+  const addTodo = (todo) => {
+    setTodos([...todos, { id: Date.now(), ...todo }]);
+  };
+
+  const updateTodo = (id, updatedTodo) => {
+    setTodos(todos.map((todo) => (todo.id === id ? updatedTodo : todo)));
+  };
+
+  const deleteTodo = (id) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+  return (
+    <TodoContext.Provider value={{ todos, addTodo, updateTodo, deleteTodo }}>
+      {children}
+    </TodoContext.Provider>
+  );
+};
+
+export const useTodos = () => useContext(TodoContext);
+
+// Navbar Component
+import { Link, useLocation } from "react-router-dom";
+
+const Navbar = () => {
+  const location = useLocation();
+
+  return (
+    <nav className="bg-blue-500 p-4 text-white shadow-md">
+      <ul className="flex space-x-4">
+        <li>
+          <Link to="/" className={location.pathname === "/" ? "underline font-bold" : "hover:underline"}>Home</Link>
+        </li>
+        <li>
+          <Link to="/todos" className={location.pathname === "/todos" ? "underline font-bold" : "hover:underline"}>Todos</Link>
+        </li>
+        <li>
+          <Link to="/add" className={location.pathname === "/add" ? "underline font-bold" : "hover:underline"}>Add Todo</Link>
+        </li>
+      </ul>
+    </nav>
+  );
+};
+
+export default Navbar;
+
+// Home Component
+const Home = () => {
+  return <h1 className="text-2xl font-bold text-center mt-4">Home</h1>;
+};
+
+export default Home;
+
+// Todos Page
+import { useTodos } from "../context/TodoContext";
+import { Link } from "react-router-dom";
+import TodoItem from "../components/TodoItem";
+
+const TodosPage = () => {
+  const { todos, deleteTodo } = useTodos();
+
+  return (
+    <div className="max-w-lg mx-auto mt-5">
+      <h1 className="text-xl font-bold mb-4">Todos</h1>
+      <ul className="space-y-2">
+        {todos.map((todo) => (
+          <TodoItem key={todo.id} todo={todo} deleteTodo={deleteTodo} />
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default TodosPage;
+
+// Add Todo Page
+import { useState } from "react";
+import { useTodos } from "../context/TodoContext";
+import { useNavigate } from "react-router-dom";
+
+const AddTodoPage = () => {
+  const [text, setText] = useState("");
+  const { addTodo } = useTodos();
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    addTodo({ text });
+    navigate("/todos");
+  };
+
+  return (
+    <div className="max-w-lg mx-auto mt-5">
+      <h1 className="text-xl font-bold mb-4">Add Todo</h1>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          className="w-full p-2 border rounded"
+          placeholder="Enter todo"
+        />
+        <button type="submit" className="bg-blue-500 text-white p-2 rounded">Add</button>
+      </form>
+    </div>
+  );
+};
+
+export default AddTodoPage;
+
+// TodoItem Component
+const TodoItem = ({ todo, deleteTodo }) => {
+  return (
+    <li className="p-3 bg-white shadow-md flex justify-between items-center rounded-md">
+      {todo.text}
+      <div>
+        <Link to={`/edit/${todo.id}`} className="text-blue-500 mr-2">Edit</Link>
+        <button onClick={() => deleteTodo(todo.id)} className="text-red-500">Delete</button>
+      </div>
+    </li>
+  );
+};
+
+export default TodoItem;
