@@ -1,5 +1,5 @@
-import { TodoItem } from "../components";
-import { useTodosContext } from "../hooks";
+import { TodoItem } from "../../components";
+import { useTodosContext } from "../../hooks";
 
 export const Todos = () => {
 	const { todos, deleteTodo, updateTodo } = useTodosContext();

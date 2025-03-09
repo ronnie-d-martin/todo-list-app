@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { AddTodoForm } from "../components";
-import { useTodosContext } from "../hooks";
+import { AddTodoForm } from "../../components";
+import { useTodosContext } from "../../hooks";
 
 export const AddTodo = () => {
 	const { addTodo } = useTodosContext();
